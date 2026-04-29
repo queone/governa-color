@@ -30,7 +30,7 @@ var enabled = func() bool {
 // SetEnabled is a test helper that mutates package-level color-enablement
 // state. It is NOT safe for concurrent use — tests calling this must NOT
 // call t.Parallel(). The returned closure restores the prior enabled value
-// and is intended for deferred invocation. (AC62)
+// and is intended for deferred invocation.
 func SetEnabled(b bool) func() {
 	prev := enabled
 	enabled = b

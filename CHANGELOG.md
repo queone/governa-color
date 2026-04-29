@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
+## [0.1.1] - 2026-04-29
+
+### Fixed
+
+- Removed a stray `(AC62)` reference in `SetEnabled`'s godoc comment. It was a governa-internal AC pointer that came along with the verbatim copy and is meaningless to library consumers. No behavior change.
+
 ## [0.1.0] - 2026-04-29
 
 ### Added
