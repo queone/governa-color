@@ -2,6 +2,12 @@
 
 ANSI terminal color helpers for CLI output. Emits 256-color SGR sequences when the terminal advertises 256-color support (via `COLORTERM` or `TERM` containing `256color`); falls back to basic ANSI codes (30–97) otherwise. Suppresses colors entirely when stdout is not a terminal or `NO_COLOR` is set ([no-color.org](https://no-color.org)).
 
+## Why
+
+CLIs in the governa family share a small, opinionated set of color helpers — `BoldW`, `Gra`, `Red`, `Yel`, `FormatUsage`, etc. — that produce consistent terminal output across every tool a user touches in a governa-managed repo. Before extraction, every governa-family repo carried its own copy of this package and synced manually; that cost real coordination time and produced silent drift. The library exists to be the single source of truth: one set of helpers, semver-versioned, picked up via `go get -u`.
+
+The package is leaf-clean — no governance coupling, no governa-internal types, no convention names. It works fine outside the governa family for any Go CLI that wants the same color heuristics (256-color preferred, basic ANSI fallback, NO_COLOR respected).
+
 ## Install
 
     go get github.com/queone/governa-color
