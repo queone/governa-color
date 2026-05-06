@@ -27,6 +27,7 @@ func TestColorFunctionsContainInput(t *testing.T) {
 		{"Yel", Yel},
 		{"Blu", Blu},
 		{"Cya", Cya},
+		{"Mag", Mag},
 		{"Red", Red},
 		{"RedR", RedR},
 		{"RedD", RedD},
@@ -62,6 +63,7 @@ func TestColorFunctionsNoTTY(t *testing.T) {
 		{"Yel", Yel},
 		{"Blu", Blu},
 		{"Cya", Cya},
+		{"Mag", Mag},
 		{"Red", Red},
 		{"RedR", RedR},
 		{"RedD", RedD},
@@ -118,6 +120,7 @@ func TestColorFunctions256Codes(t *testing.T) {
 		{"Yel", Yel, "38;5;3"},
 		{"Blu", Blu, "38;5;12"},
 		{"Cya", Cya, "38;5;6"},
+		{"Mag", Mag, "38;5;13"},
 		{"Red", Red, "38;5;9"},
 		{"RedR", RedR, "38;5;15;48;5;1"},
 		{"RedD", RedD, "38;5;124"},
@@ -159,6 +162,7 @@ func TestColorFunctionsBasicCodes(t *testing.T) {
 		{"Yel", Yel, "33"},
 		{"Blu", Blu, "94"},
 		{"Cya", Cya, "36"},
+		{"Mag", Mag, "95"},
 		{"Red", Red, "91"},
 		{"RedR", RedR, "97;41"},
 		{"RedD", RedD, "31"},
@@ -194,7 +198,7 @@ func TestShowPaletteCoversAllFunctions(t *testing.T) {
 
 	for _, label := range []string{
 		"Gra", "Grn", "GrnR", "GrnD",
-		"Yel", "Blu", "Cya",
+		"Yel", "Blu", "Cya", "Mag",
 		"Red", "RedR", "RedD",
 		"Whi", "Whi2", "BoldW",
 	} {
@@ -255,7 +259,85 @@ func TestFormatUsage(t *testing.T) {
 	})
 }
 
-// AC62: SetEnabled toggles the package-level enabled var and returns a
+// TestClearCodeStripsAnsiSGR feeds known ANSI escape sequences and verifies
+// they are removed while non-escape content is preserved.
+func TestClearCodeStripsAnsiSGR(t *testing.T) {
+	cases := []struct {
+		in   string
+		want string
+	}{
+		{"\x1b[32mhello\x1b[0m", "hello"},
+		{"plain text", "plain text"},
+		{"\x1b[38;5;2mok\x1b[0m end", "ok end"},
+		{"", ""},
+		{"\x1b[1;38;5;15mbold\x1b[0m and \x1b[31mred\x1b[0m", "bold and red"},
+		{"no escapes here", "no escapes here"},
+	}
+	for _, tc := range cases {
+		if got := ClearCode(tc.in); got != tc.want {
+			t.Errorf("ClearCode(%q) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}
+
+// TestClearCodeRoundTripWithColorHelpers renders a sample through every
+// color helper and verifies ClearCode strips back to the original input.
+func TestClearCodeRoundTripWithColorHelpers(t *testing.T) {
+	defer SetEnabled(true)()
+
+	sample := "the quick brown fox"
+	helpers := []struct {
+		name string
+		fn   func(any) string
+	}{
+		{"Gra", Gra},
+		{"Grn", Grn},
+		{"GrnR", GrnR},
+		{"GrnD", GrnD},
+		{"Yel", Yel},
+		{"Blu", Blu},
+		{"Cya", Cya},
+		{"Mag", Mag},
+		{"Red", Red},
+		{"RedR", RedR},
+		{"RedD", RedD},
+		{"Whi", Whi},
+		{"Whi2", Whi2},
+		{"BoldW", BoldW},
+	}
+	for _, h := range helpers {
+		rendered := h.fn(sample)
+		if got := ClearCode(rendered); got != sample {
+			t.Errorf("ClearCode(%s(%q)) = %q, want %q", h.name, sample, got, sample)
+		}
+	}
+}
+
+// TestPrintfStyleColorWrappers verifies Yelf/Redf/Grnf format their input
+// through fmt.Sprintf and pass the result through their non-printf
+// counterpart for coloring.
+func TestPrintfStyleColorWrappers(t *testing.T) {
+	defer SetEnabled(true)()
+
+	cases := []struct {
+		name    string
+		fn      func(string, ...any) string
+		wrapper func(any) string
+	}{
+		{"Yelf", Yelf, Yel},
+		{"Redf", Redf, Red},
+		{"Grnf", Grnf, Grn},
+	}
+	for _, tc := range cases {
+		got := tc.fn("count=%d name=%s", 42, "alice")
+		want := tc.wrapper("count=42 name=alice")
+		if got != want {
+			t.Errorf("%s(%q, 42, \"alice\") = %q, want %q", tc.name, "count=%d name=%s", got, want)
+		}
+	}
+}
+
+// SetEnabled toggles the package-level enabled var and returns a
 // restore closure. Not parallel-safe by design.
 func TestColorSetEnabledTogglesAndRestores(t *testing.T) {
 	// Record the current state so we can confirm round-trip.

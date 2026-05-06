@@ -9,8 +9,21 @@ package color
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 )
+
+// ansiSGR matches a CSI SGR escape sequence (ESC[ ... m). Used by ClearCode
+// to strip color/formatting escapes from already-rendered strings or input
+// piped from a color-emitting source.
+var ansiSGR = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+// ClearCode strips ANSI/SGR escape sequences from s. Useful for stripping
+// color/formatting from previously-rendered strings or from piped/file
+// input before further processing.
+func ClearCode(s string) string {
+	return ansiSGR.ReplaceAllString(s, "")
+}
 
 // enabled is true when the terminal supports color output.
 var enabled = func() bool {
@@ -83,6 +96,9 @@ func Blu(v any) string { return wrap(pick("38;5;12", "94"), v) }
 // Cya renders v in cyan.
 func Cya(v any) string { return wrap(pick("38;5;6", "36"), v) }
 
+// Mag renders v in magenta.
+func Mag(v any) string { return wrap(pick("38;5;13", "95"), v) }
+
 // Red renders v in bright red.
 func Red(v any) string { return wrap(pick("38;5;9", "91"), v) }
 
@@ -100,6 +116,15 @@ func Whi2(v any) string { return wrap(pick("38;5;15", "97"), v) }
 
 // BoldW renders v in bold bright white.
 func BoldW(v any) string { return wrap(pick("1;38;5;15", "1;97"), v) }
+
+// Yelf renders fmt.Sprintf(format, args...) in yellow.
+func Yelf(format string, args ...any) string { return Yel(fmt.Sprintf(format, args...)) }
+
+// Redf renders fmt.Sprintf(format, args...) in red.
+func Redf(format string, args ...any) string { return Red(fmt.Sprintf(format, args...)) }
+
+// Grnf renders fmt.Sprintf(format, args...) in green.
+func Grnf(format string, args ...any) string { return Grn(fmt.Sprintf(format, args...)) }
 
 // ShowPalette prints a labeled swatch of every color function to stdout.
 // Useful for verifying terminal rendering and choosing colors.
@@ -119,6 +144,7 @@ func ShowPalette() {
 		{"Yel ", Yel, "38;5;3", "33"},
 		{"Blu ", Blu, "38;5;12", "94"},
 		{"Cya ", Cya, "38;5;6", "36"},
+		{"Mag ", Mag, "38;5;13", "95"},
 		{"Red ", Red, "38;5;9", "91"},
 		{"RedR", RedR, "38;5;15;48;5;1", "97;41"},
 		{"RedD", RedD, "38;5;124", "31"},
