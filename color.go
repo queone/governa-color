@@ -117,6 +117,12 @@ func Whi2(v any) string { return wrap(pick("38;5;15", "97"), v) }
 // BoldW renders v in bold bright white.
 func BoldW(v any) string { return wrap(pick("1;38;5;15", "1;97"), v) }
 
+// BoldR renders v in bold bright red.
+func BoldR(v any) string { return wrap(pick("1;38;5;9", "1;91"), v) }
+
+// BoldG renders v in bold bright green.
+func BoldG(v any) string { return wrap(pick("1;38;5;2", "1;92"), v) }
+
 // Yelf renders fmt.Sprintf(format, args...) in yellow.
 func Yelf(format string, args ...any) string { return Yel(fmt.Sprintf(format, args...)) }
 
@@ -151,6 +157,8 @@ func ShowPalette() {
 		{"Whi ", Whi, "38;5;7", "37"},
 		{"Whi2", Whi2, "38;5;15", "97"},
 		{"BoldW", BoldW, "1;38;5;15", "1;97"},
+		{"BoldR", BoldR, "1;38;5;9", "1;91"},
+		{"BoldG", BoldG, "1;38;5;2", "1;92"},
 	}
 	mode := "basic ANSI"
 	if color256 {

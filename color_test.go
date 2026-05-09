@@ -34,6 +34,8 @@ func TestColorFunctionsContainInput(t *testing.T) {
 		{"Whi", Whi},
 		{"Whi2", Whi2},
 		{"BoldW", BoldW},
+		{"BoldR", BoldR},
+		{"BoldG", BoldG},
 	}
 	for _, tc := range cases {
 		got := tc.fn("hello")
@@ -70,6 +72,8 @@ func TestColorFunctionsNoTTY(t *testing.T) {
 		{"Whi", Whi},
 		{"Whi2", Whi2},
 		{"BoldW", BoldW},
+		{"BoldR", BoldR},
+		{"BoldG", BoldG},
 	}
 	for _, tc := range cases {
 		got := tc.fn("test")
@@ -127,6 +131,8 @@ func TestColorFunctions256Codes(t *testing.T) {
 		{"Whi", Whi, "38;5;7"},
 		{"Whi2", Whi2, "38;5;15"},
 		{"BoldW", BoldW, "1;38;5;15"},
+		{"BoldR", BoldR, "1;38;5;9"},
+		{"BoldG", BoldG, "1;38;5;2"},
 	}
 	for _, tc := range cases {
 		got := tc.fn("x")
@@ -169,6 +175,8 @@ func TestColorFunctionsBasicCodes(t *testing.T) {
 		{"Whi", Whi, "37"},
 		{"Whi2", Whi2, "97"},
 		{"BoldW", BoldW, "1;97"},
+		{"BoldR", BoldR, "1;91"},
+		{"BoldG", BoldG, "1;92"},
 	}
 	for _, tc := range cases {
 		got := tc.fn("x")
@@ -200,7 +208,7 @@ func TestShowPaletteCoversAllFunctions(t *testing.T) {
 		"Gra", "Grn", "GrnR", "GrnD",
 		"Yel", "Blu", "Cya", "Mag",
 		"Red", "RedR", "RedD",
-		"Whi", "Whi2", "BoldW",
+		"Whi", "Whi2", "BoldW", "BoldR", "BoldG",
 	} {
 		if !strings.Contains(output, label) {
 			t.Errorf("ShowPalette() output missing label %q", label)
@@ -304,6 +312,8 @@ func TestClearCodeRoundTripWithColorHelpers(t *testing.T) {
 		{"Whi", Whi},
 		{"Whi2", Whi2},
 		{"BoldW", BoldW},
+		{"BoldR", BoldR},
+		{"BoldG", BoldG},
 	}
 	for _, h := range helpers {
 		rendered := h.fn(sample)
