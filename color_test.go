@@ -86,6 +86,9 @@ func TestWrapEmptyString(t *testing.T) {
 // TestWrapProducesEscapes verifies wrap() emits the documented ANSI shape.
 func TestWrapProducesEscapes(t *testing.T) {
 	defer SetEnabled(true)()
+	prev := color256
+	color256 = true
+	defer func() { color256 = prev }()
 
 	got := wrap("38;5;46", "ok")
 	want := "\x1b[38;5;46mok\x1b[0m"
@@ -94,10 +97,33 @@ func TestWrapProducesEscapes(t *testing.T) {
 	}
 }
 
+// TestWrapPlainTextOnNon256TTY verifies v1.0.1's fix: when enabled=true but
+// color256=false (a 16-color TTY), wrap returns plain text instead of
+// emitting 256-color SGR escapes the terminal can't render properly.
+func TestWrapPlainTextOnNon256TTY(t *testing.T) {
+	defer SetEnabled(true)()
+	prev := color256
+	color256 = false
+	defer func() { color256 = prev }()
+
+	if got := wrap("38;5;46", "ok"); got != "ok" {
+		t.Errorf("wrap on non-256 TTY: got %q, want %q", got, "ok")
+	}
+	if got := Bold("ok"); got != "ok" {
+		t.Errorf("Bold on non-256 TTY: got %q, want %q", got, "ok")
+	}
+	if got := Reverse("ok"); got != "ok" {
+		t.Errorf("Reverse on non-256 TTY: got %q, want %q", got, "ok")
+	}
+}
+
 // TestColorFunctions256Codes spot-checks the documented 256-color escape
 // for canonical (step 5) hues and a few endpoints.
 func TestColorFunctions256Codes(t *testing.T) {
 	defer SetEnabled(true)()
+	prev := color256
+	color256 = true
+	defer func() { color256 = prev }()
 
 	cases := []struct {
 		name string
@@ -136,6 +162,9 @@ func TestColorFunctions256Codes(t *testing.T) {
 // green: bold attribute prefix, color escape, content, single-reset suffix.
 func TestBoldComposesWithSingleColor(t *testing.T) {
 	defer SetEnabled(true)()
+	prev := color256
+	color256 = true
+	defer func() { color256 = prev }()
 
 	got := Bold(Grn5("x"))
 	want := "\x1b[1m\x1b[38;5;46mx\x1b[0m\x1b[1m\x1b[0m"
@@ -148,6 +177,9 @@ func TestBoldComposesWithSingleColor(t *testing.T) {
 // modifier survive across nested color blocks.
 func TestBoldComposesWithMultipleColors(t *testing.T) {
 	defer SetEnabled(true)()
+	prev := color256
+	color256 = true
+	defer func() { color256 = prev }()
 
 	got := Bold(Grn5("a") + Red5("b"))
 	// The inner reset between segments is rewritten so bold re-applies for "b".
@@ -159,6 +191,9 @@ func TestBoldComposesWithMultipleColors(t *testing.T) {
 // TestReverseComposesWithColor — Reverse mirrors Bold's behavior.
 func TestReverseComposesWithColor(t *testing.T) {
 	defer SetEnabled(true)()
+	prev := color256
+	color256 = true
+	defer func() { color256 = prev }()
 
 	got := Reverse(Grn5("x"))
 	want := "\x1b[7m\x1b[38;5;46mx\x1b[0m\x1b[7m\x1b[0m"
@@ -286,6 +321,9 @@ func TestClearCodeStripsAnsiSGR(t *testing.T) {
 // strips back to the original.
 func TestClearCodeRoundTripWithColorHelpers(t *testing.T) {
 	defer SetEnabled(true)()
+	prev := color256
+	color256 = true
+	defer func() { color256 = prev }()
 
 	sample := "the quick brown fox"
 	helpers := []struct {

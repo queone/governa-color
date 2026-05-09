@@ -71,12 +71,13 @@ func ClearCode(s string) string {
 
 // ─── core wrap ───────────────────────────────────────────────────────────────
 
-// wrap emits "\x1b[<code>m<v>\x1b[0m" when enabled is true; otherwise returns
-// fmt.Sprint(v) unwrapped. v1.0 dropped the basic-ANSI fallback layer — when
-// the terminal can't render 256-color, callers see plain text.
+// wrap emits "\x1b[<code>m<v>\x1b[0m" when both enabled and color256 are
+// true; otherwise returns fmt.Sprint(v) unwrapped. v1.0 dropped the
+// basic-ANSI fallback layer, so non-256-color terminals receive plain text
+// (matching the no-TTY / NO_COLOR / TERM=dumb suppression).
 func wrap(code string, v any) string {
 	s := fmt.Sprint(v)
-	if !enabled {
+	if !enabled || !color256 {
 		return s
 	}
 	return "\x1b[" + code + "m" + s + "\x1b[0m"
@@ -96,7 +97,7 @@ var resetCodeRe = regexp.MustCompile(`\x1b\[0m`)
 // multiple colored segments — color.Bold(color.Grn5("a")+color.Red5("b"))
 // renders both segments bold.
 func Bold(s string) string {
-	if !enabled {
+	if !enabled || !color256 {
 		return s
 	}
 	rewrapped := resetCodeRe.ReplaceAllString(s, "\x1b[0m\x1b[1m")
@@ -107,7 +108,7 @@ func Bold(s string) string {
 // background swapped). Composable with hue / heat helpers; same internal-
 // reset rewrite as Bold.
 func Reverse(s string) string {
-	if !enabled {
+	if !enabled || !color256 {
 		return s
 	}
 	rewrapped := resetCodeRe.ReplaceAllString(s, "\x1b[0m\x1b[7m")
