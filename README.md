@@ -24,7 +24,7 @@ func main() {
 }
 ```
 
-`color.ShowPalette()` prints a labeled swatch of every color function for terminal verification.
+`color.ShowPalette()` prints a labeled swatch of every color function for terminal verification. `color.ShowGrid(token, reverse, fgIndex)` prints a bordered side-by-side grid of every ramp at every step (RedX..HeatX columns × 0..10\* rows), each cell rendering `token` — useful for picking a label color or comparing close shades. Empty `token` defaults to `"TOKEN"`. With `reverse=true` each cell is a solid background-color block (handy for label-background colors); `fgIndex >= 0` then overrides the text color to that 256-color SGR index (e.g. 15 for bright white). The `cmd/showgrid` runner exposes the same as `-r` / `-r=N`.
 
 ## Versioning
 

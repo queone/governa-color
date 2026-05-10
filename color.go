@@ -275,12 +275,16 @@ func Heat10(v any) string { return wrap("38;5;46", v) }
 
 // ─── ShowPalette ─────────────────────────────────────────────────────────────
 
-// hueRamps drives showHueRamps. The indices here mirror the per-hue funcs
-// above; keep the two in sync when iterating on the palette.
-var hueRamps = []struct {
+// rampDef pairs a ramp's name (matching the function-name prefix) with its
+// 11 ordered SGR indices (step 0 darkest, step 5 canonical, step 10 brightest).
+type rampDef struct {
 	name    string
 	indices [11]int
-}{
+}
+
+// hueRamps drives showHueRamps. The indices here mirror the per-hue funcs
+// above; keep the two in sync when iterating on the palette.
+var hueRamps = []rampDef{
 	{"Gra", [11]int{16, 233, 236, 239, 242, 245, 248, 251, 254, 255, 231}},
 	{"Red", [11]int{16, 52, 88, 124, 160, 196, 203, 210, 217, 224, 231}},
 	{"Org", [11]int{16, 88, 130, 166, 172, 208, 214, 215, 222, 229, 230}},
@@ -368,6 +372,82 @@ func showHeatRamp() {
 	}
 	fmt.Println()
 	fmt.Println()
+}
+
+// ─── ShowGrid ────────────────────────────────────────────────────────────────
+
+// defaultGridToken is rendered when ShowGrid is called with an empty token.
+const defaultGridToken = "TOKEN"
+
+// ShowGrid prints a bordered side-by-side grid: every ramp as a column (hue
+// ramps then Heat), every step (0..10) as a row. Column headers use the
+// function-name pattern with "X" as the step placeholder (e.g. RedX, BluX,
+// HeatX); row labels are the X value, with row 5 suffixed "*" to mark the
+// canonical step. Each cell renders token in that ramp/step combo, padded to
+// fill the cell so adjacent close shades separate cleanly along the borders.
+// If token is empty, "TOKEN" is used.
+//
+// When reverse is true, cells use background-color SGR (48;5;N) instead of
+// foreground (38;5;N), turning each cell into a solid colored rectangle —
+// useful for evaluating shades as label backgrounds. fgIndex then selects
+// the text color rendered atop those colored cells: pass any 256-color SGR
+// index (0..255), or a negative value to keep the terminal's default
+// foreground. fgIndex is ignored when reverse is false.
+//
+// Useful for picking a label color or debugging ramp choices in any consumer
+// of governa-color.
+func ShowGrid(token string, reverse bool, fgIndex int) {
+	if token == "" {
+		token = defaultGridToken
+	}
+	ramps := append(append([]rampDef{}, hueRamps...), rampDef{"Heat", heatRamp})
+
+	cellW := len(token)
+	for _, r := range ramps {
+		if l := len(r.name) + 1; l > cellW { // "<name>X"
+			cellW = l
+		}
+	}
+	const labelW = 2 // fits "5*" or "10"
+
+	labelDash := strings.Repeat("─", labelW+2)
+	cellDash := strings.Repeat("─", cellW+2)
+	top := "┌" + labelDash + strings.Repeat("┬"+cellDash, len(ramps)) + "┐"
+	mid := "├" + labelDash + strings.Repeat("┼"+cellDash, len(ramps)) + "┤"
+	bot := "└" + labelDash + strings.Repeat("┴"+cellDash, len(ramps)) + "┘"
+
+	// Header row: blank label cell, then "<name>X" per column.
+	fmt.Println(top)
+	fmt.Printf("│%s", strings.Repeat(" ", labelW+2))
+	for _, r := range ramps {
+		fmt.Printf("│ %-*s ", cellW, r.name+"X")
+	}
+	fmt.Println("│")
+	fmt.Println(mid)
+
+	// Step rows.
+	for step := 0; step <= 10; step++ {
+		label := fmt.Sprintf("%d", step)
+		if step == 5 {
+			label += "*"
+		}
+		fmt.Printf("│ %-*s ", labelW, label)
+		for _, r := range ramps {
+			padded := fmt.Sprintf(" %-*s ", cellW, token)
+			var sgrCode string
+			switch {
+			case !reverse:
+				sgrCode = fmt.Sprintf("38;5;%d", r.indices[step])
+			case fgIndex < 0:
+				sgrCode = fmt.Sprintf("48;5;%d", r.indices[step])
+			default:
+				sgrCode = fmt.Sprintf("48;5;%d;38;5;%d", r.indices[step], fgIndex)
+			}
+			fmt.Printf("│%s", wrap(sgrCode, padded))
+		}
+		fmt.Println("│")
+	}
+	fmt.Println(bot)
 }
 
 // ─── FormatUsage ─────────────────────────────────────────────────────────────

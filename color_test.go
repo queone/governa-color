@@ -254,6 +254,117 @@ func TestShowPaletteCoversAllSections(t *testing.T) {
 	}
 }
 
+// captureShowGrid runs ShowGrid with the given args and returns its stdout.
+func captureShowGrid(t *testing.T, token string, reverse bool, fgIndex int) string {
+	t.Helper()
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	ShowGrid(token, reverse, fgIndex)
+	w.Close()
+	os.Stdout = oldStdout
+	buf, _ := io.ReadAll(r)
+	return string(buf)
+}
+
+// TestShowGrid_layout captures ShowGrid output and verifies the bordered
+// grid: top / header / divider / 11 step rows / bottom; every ramp's
+// "<name>X" column heading; default token "TOKEN" when empty; row 5 flagged
+// with "*"; and one token instance per (ramp, step) cell.
+func TestShowGrid_layout(t *testing.T) {
+	output := captureShowGrid(t, "", false, -1) // empty → defaults to "TOKEN"
+	lines := strings.Split(strings.TrimRight(output, "\n"), "\n")
+
+	// top + header + mid + 11 step rows + bottom = 15 lines.
+	if len(lines) != 15 {
+		t.Fatalf("line count: got %d, want 15\noutput:\n%s", len(lines), output)
+	}
+	if !strings.HasPrefix(lines[0], "┌") || !strings.HasSuffix(lines[0], "┐") {
+		t.Errorf("top border malformed: %q", lines[0])
+	}
+	if !strings.HasPrefix(lines[2], "├") || !strings.HasSuffix(lines[2], "┤") {
+		t.Errorf("mid divider malformed: %q", lines[2])
+	}
+	if !strings.HasPrefix(lines[14], "└") || !strings.HasSuffix(lines[14], "┘") {
+		t.Errorf("bottom border malformed: %q", lines[14])
+	}
+
+	// Every hue plus Heat appears as "<name>X" in the header line.
+	wantHeaders := []string{"GraX", "RedX", "OrgX", "YelX", "GrnX", "CyaX", "BluX", "PurX", "MagX", "WhiX", "HeatX"}
+	for _, h := range wantHeaders {
+		if !strings.Contains(lines[1], h) {
+			t.Errorf("header missing column %q\nheader: %q", h, lines[1])
+		}
+	}
+
+	// Default token rendered once per (ramp, step) cell = 11 ramps × 11 steps.
+	if got, want := strings.Count(output, "TOKEN"), 11*11; got != want {
+		t.Errorf("token count: got %d, want %d", got, want)
+	}
+
+	// Row 5's first cell carries the canonical "*"; other rows do not.
+	for step := 0; step <= 10; step++ {
+		row := lines[3+step]
+		first := strings.SplitN(strings.TrimPrefix(row, "│ "), " ", 2)[0]
+		hasStar := strings.HasSuffix(first, "*")
+		if step == 5 && !hasStar {
+			t.Errorf("step 5 label missing canonical *: %q", first)
+		}
+		if step != 5 && hasStar {
+			t.Errorf("step %d label unexpectedly has *: %q", step, first)
+		}
+	}
+}
+
+// TestShowGrid_customToken verifies a non-empty token is rendered verbatim
+// and the default does not leak in.
+func TestShowGrid_customToken(t *testing.T) {
+	output := captureShowGrid(t, "HEADER", false, -1)
+	if got, want := strings.Count(output, "HEADER"), 11*11; got != want {
+		t.Errorf("custom-token count: got %d, want %d", got, want)
+	}
+	if strings.Contains(output, "TOKEN") {
+		t.Errorf("default token leaked into custom-token output")
+	}
+}
+
+// TestShowGrid_reverseEmitsBackgroundSGR forces 256-color mode so wrap emits
+// real SGR escapes, then verifies reverse=true with default fg uses only the
+// background-color prefix (48;5;), reverse=true with a fgIndex emits both
+// (48;5;BG;38;5;FG), and reverse=false uses only the foreground prefix
+// (38;5;).
+func TestShowGrid_reverseEmitsBackgroundSGR(t *testing.T) {
+	prevEnabled := SetEnabled(true)
+	defer prevEnabled()
+	prev256 := color256
+	color256 = true
+	defer func() { color256 = prev256 }()
+
+	fg := captureShowGrid(t, "", false, -1)
+	if !strings.Contains(fg, "\x1b[38;5;") {
+		t.Errorf("forward mode missing foreground SGR (38;5;...)\noutput:\n%q", fg)
+	}
+	if strings.Contains(fg, "\x1b[48;5;") {
+		t.Errorf("forward mode unexpectedly emitted background SGR (48;5;...)")
+	}
+
+	rev := captureShowGrid(t, "", true, -1)
+	if !strings.Contains(rev, "\x1b[48;5;") {
+		t.Errorf("reverse mode missing background SGR (48;5;...)\noutput:\n%q", rev)
+	}
+	if strings.Contains(rev, "\x1b[38;5;") {
+		t.Errorf("reverse mode (default fg) unexpectedly emitted foreground SGR (38;5;...)")
+	}
+
+	revFg := captureShowGrid(t, "", true, 15)
+	if !strings.Contains(revFg, "\x1b[48;5;") {
+		t.Errorf("reverse+fg missing background SGR (48;5;...)\noutput:\n%q", revFg)
+	}
+	if !strings.Contains(revFg, ";38;5;15") {
+		t.Errorf("reverse+fg missing combined fg SGR (;38;5;15)\noutput:\n%q", revFg)
+	}
+}
+
 func TestFormatUsage(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		got := FormatUsage("prog [flags]", []UsageLine{
