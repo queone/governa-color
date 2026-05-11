@@ -18,11 +18,17 @@ The package is leaf-clean — no governance coupling, no governa-internal types,
 import "github.com/queone/governa-color"
 
 func main() {
-    fmt.Println(color.BoldW("governa"))
-    fmt.Println(color.Gra("dim helper text"))
-    fmt.Println(color.Red("error: something went wrong"))
+    fmt.Println(color.Bold(color.Whi5("governa")))            // bold white
+    fmt.Println(color.Gra5("dim helper text"))                // canonical gray
+    fmt.Println(color.Red5("error: something went wrong"))    // canonical red
+    fmt.Println(color.Heat0("worst") + " " + color.Heat10("best"))
+
+    // Background helpers compose with foreground helpers:
+    fmt.Println(color.BgGra2(color.Whi9("CAREER 2024-25")))   // light-gray text on dim-gray bg
 }
 ```
+
+Each hue exposes an 11-step ramp (`Gra0..Gra10`, `Red0..Red10`, …, `Whi0..Whi10`) with step 5 as the canonical shade; `Heat0..Heat10` is a severity/quality ramp (red → yellow → green). Every foreground helper has a `Bg<Hue><Step>` twin emitting the same color as background (`48;5;N` SGR), composable with `Bold`, `Reverse`, and any foreground helper.
 
 `color.ShowPalette()` prints a labeled swatch of every color function for terminal verification. `color.ShowGrid(token, reverse, fgIndex)` prints a bordered side-by-side grid of every ramp at every step (RedX..HeatX columns × 0..10\* rows), each cell rendering `token` — useful for picking a label color or comparing close shades. Empty `token` defaults to `"TOKEN"`. With `reverse=true` each cell is a solid background-color block (handy for label-background colors); `fgIndex >= 0` then overrides the text color to that 256-color SGR index (e.g. 15 for bright white).
 

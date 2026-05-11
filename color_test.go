@@ -47,6 +47,28 @@ func allHelpers() []struct {
 		{"Whi5", Whi5}, {"Whi6", Whi6}, {"Whi7", Whi7}, {"Whi8", Whi8}, {"Whi9", Whi9}, {"Whi10", Whi10},
 		{"Heat0", Heat0}, {"Heat1", Heat1}, {"Heat2", Heat2}, {"Heat3", Heat3}, {"Heat4", Heat4},
 		{"Heat5", Heat5}, {"Heat6", Heat6}, {"Heat7", Heat7}, {"Heat8", Heat8}, {"Heat9", Heat9}, {"Heat10", Heat10},
+		{"BgGra0", BgGra0}, {"BgGra1", BgGra1}, {"BgGra2", BgGra2}, {"BgGra3", BgGra3}, {"BgGra4", BgGra4},
+		{"BgGra5", BgGra5}, {"BgGra6", BgGra6}, {"BgGra7", BgGra7}, {"BgGra8", BgGra8}, {"BgGra9", BgGra9}, {"BgGra10", BgGra10},
+		{"BgRed0", BgRed0}, {"BgRed1", BgRed1}, {"BgRed2", BgRed2}, {"BgRed3", BgRed3}, {"BgRed4", BgRed4},
+		{"BgRed5", BgRed5}, {"BgRed6", BgRed6}, {"BgRed7", BgRed7}, {"BgRed8", BgRed8}, {"BgRed9", BgRed9}, {"BgRed10", BgRed10},
+		{"BgOrg0", BgOrg0}, {"BgOrg1", BgOrg1}, {"BgOrg2", BgOrg2}, {"BgOrg3", BgOrg3}, {"BgOrg4", BgOrg4},
+		{"BgOrg5", BgOrg5}, {"BgOrg6", BgOrg6}, {"BgOrg7", BgOrg7}, {"BgOrg8", BgOrg8}, {"BgOrg9", BgOrg9}, {"BgOrg10", BgOrg10},
+		{"BgYel0", BgYel0}, {"BgYel1", BgYel1}, {"BgYel2", BgYel2}, {"BgYel3", BgYel3}, {"BgYel4", BgYel4},
+		{"BgYel5", BgYel5}, {"BgYel6", BgYel6}, {"BgYel7", BgYel7}, {"BgYel8", BgYel8}, {"BgYel9", BgYel9}, {"BgYel10", BgYel10},
+		{"BgGrn0", BgGrn0}, {"BgGrn1", BgGrn1}, {"BgGrn2", BgGrn2}, {"BgGrn3", BgGrn3}, {"BgGrn4", BgGrn4},
+		{"BgGrn5", BgGrn5}, {"BgGrn6", BgGrn6}, {"BgGrn7", BgGrn7}, {"BgGrn8", BgGrn8}, {"BgGrn9", BgGrn9}, {"BgGrn10", BgGrn10},
+		{"BgCya0", BgCya0}, {"BgCya1", BgCya1}, {"BgCya2", BgCya2}, {"BgCya3", BgCya3}, {"BgCya4", BgCya4},
+		{"BgCya5", BgCya5}, {"BgCya6", BgCya6}, {"BgCya7", BgCya7}, {"BgCya8", BgCya8}, {"BgCya9", BgCya9}, {"BgCya10", BgCya10},
+		{"BgBlu0", BgBlu0}, {"BgBlu1", BgBlu1}, {"BgBlu2", BgBlu2}, {"BgBlu3", BgBlu3}, {"BgBlu4", BgBlu4},
+		{"BgBlu5", BgBlu5}, {"BgBlu6", BgBlu6}, {"BgBlu7", BgBlu7}, {"BgBlu8", BgBlu8}, {"BgBlu9", BgBlu9}, {"BgBlu10", BgBlu10},
+		{"BgPur0", BgPur0}, {"BgPur1", BgPur1}, {"BgPur2", BgPur2}, {"BgPur3", BgPur3}, {"BgPur4", BgPur4},
+		{"BgPur5", BgPur5}, {"BgPur6", BgPur6}, {"BgPur7", BgPur7}, {"BgPur8", BgPur8}, {"BgPur9", BgPur9}, {"BgPur10", BgPur10},
+		{"BgMag0", BgMag0}, {"BgMag1", BgMag1}, {"BgMag2", BgMag2}, {"BgMag3", BgMag3}, {"BgMag4", BgMag4},
+		{"BgMag5", BgMag5}, {"BgMag6", BgMag6}, {"BgMag7", BgMag7}, {"BgMag8", BgMag8}, {"BgMag9", BgMag9}, {"BgMag10", BgMag10},
+		{"BgWhi0", BgWhi0}, {"BgWhi1", BgWhi1}, {"BgWhi2", BgWhi2}, {"BgWhi3", BgWhi3}, {"BgWhi4", BgWhi4},
+		{"BgWhi5", BgWhi5}, {"BgWhi6", BgWhi6}, {"BgWhi7", BgWhi7}, {"BgWhi8", BgWhi8}, {"BgWhi9", BgWhi9}, {"BgWhi10", BgWhi10},
+		{"BgHeat0", BgHeat0}, {"BgHeat1", BgHeat1}, {"BgHeat2", BgHeat2}, {"BgHeat3", BgHeat3}, {"BgHeat4", BgHeat4},
+		{"BgHeat5", BgHeat5}, {"BgHeat6", BgHeat6}, {"BgHeat7", BgHeat7}, {"BgHeat8", BgHeat8}, {"BgHeat9", BgHeat9}, {"BgHeat10", BgHeat10},
 	}
 }
 
@@ -145,6 +167,14 @@ func TestColorFunctions256Codes(t *testing.T) {
 		{"Heat10", Heat10, "38;5;46"},
 		{"Grn0", Grn0, "38;5;16"},
 		{"Grn10", Grn10, "38;5;231"},
+		{"BgGra5", BgGra5, "48;5;245"},
+		{"BgRed5", BgRed5, "48;5;196"},
+		{"BgGrn5", BgGrn5, "48;5;46"},
+		{"BgBlu5", BgBlu5, "48;5;21"},
+		{"BgHeat0", BgHeat0, "48;5;196"},
+		{"BgHeat10", BgHeat10, "48;5;46"},
+		{"BgGrn0", BgGrn0, "48;5;16"},
+		{"BgGrn10", BgGrn10, "48;5;231"},
 	}
 	for _, tc := range cases {
 		got := tc.fn("x")
@@ -200,6 +230,55 @@ func TestReverseComposesWithColor(t *testing.T) {
 	if got != want {
 		t.Errorf("Reverse(Grn5(\"x\")) = %q, want %q", got, want)
 	}
+}
+
+// TestBgComposesWithForegroundHelper verifies a Bg<Hue> wrapping a fg helper
+// emits the documented two-prefix shape (48;5;BG then 38;5;FG, both inner
+// then outer reset), round-trips clean through ClearCode, returns bare
+// input on the no-TTY path, and that Bold(Bg(Fg(...))) keeps the bold
+// attribute alive across the nested resets (same resetCodeRe trick as the
+// fg-only compose tests).
+func TestBgComposesWithForegroundHelper(t *testing.T) {
+	t.Run("two_prefix_shape", func(t *testing.T) {
+		defer SetEnabled(true)()
+		prev := color256
+		color256 = true
+		defer func() { color256 = prev }()
+
+		got := BgGra2(Whi9("x"))
+		want := "\x1b[48;5;236m\x1b[38;5;255mx\x1b[0m\x1b[0m"
+		if got != want {
+			t.Errorf("BgGra2(Whi9(\"x\")) = %q, want %q", got, want)
+		}
+		if stripped := ClearCode(got); stripped != "x" {
+			t.Errorf("ClearCode(BgGra2(Whi9(\"x\"))) = %q, want %q", stripped, "x")
+		}
+	})
+
+	t.Run("no_tty", func(t *testing.T) {
+		if enabled {
+			t.Skip("TTY detected — skipping no-color path test")
+		}
+		if got := BgGra2(Whi9("x")); got != "x" {
+			t.Errorf("no-TTY path: BgGra2(Whi9(\"x\")) = %q, want %q", got, "x")
+		}
+	})
+
+	t.Run("bold_survives_bg_fg_nest", func(t *testing.T) {
+		defer SetEnabled(true)()
+		prev := color256
+		color256 = true
+		defer func() { color256 = prev }()
+
+		got := Bold(BgGra2(Whi9("x")))
+		// Bold's resetCodeRe rewrites every inner reset to "\x1b[0m\x1b[1m", so
+		// the bold attribute reapplies after both the inner fg reset and the
+		// inner bg reset, keeping bold alive across the full nest.
+		want := "\x1b[1m\x1b[48;5;236m\x1b[38;5;255mx\x1b[0m\x1b[1m\x1b[0m\x1b[1m\x1b[0m"
+		if got != want {
+			t.Errorf("Bold(BgGra2(Whi9(\"x\"))) = %q, want %q", got, want)
+		}
+	})
 }
 
 // TestBoldNoTTY: when color is disabled, Bold returns input unchanged.
