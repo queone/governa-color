@@ -318,7 +318,7 @@ func ShowPalette() {
 
 func showAllIndices() {
 	fmt.Println(Gra5("Standard 16-color palette (0-15):"))
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		block := wrap(fmt.Sprintf("38;5;%d", i), "███")
 		fmt.Printf("  %s %s", block, Gra5(fmt.Sprintf("%-3d", i)))
 		if (i+1)%8 == 0 {
@@ -327,10 +327,10 @@ func showAllIndices() {
 	}
 	fmt.Println()
 	fmt.Println(Gra5("256-color cube (16-231) — index = 16 + 36r + 6g + b:"))
-	for r := 0; r < 6; r++ {
-		for g := 0; g < 6; g++ {
+	for r := range 6 {
+		for g := range 6 {
 			fmt.Printf("  r=%d g=%d  ", r, g)
-			for b := 0; b < 6; b++ {
+			for b := range 6 {
 				idx := 16 + 36*r + 6*g + b
 				block := wrap(fmt.Sprintf("38;5;%d", idx), "███")
 				fmt.Printf(" %s %s", block, Gra5(fmt.Sprintf("%-3d", idx)))
