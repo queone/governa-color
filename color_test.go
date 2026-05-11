@@ -245,8 +245,10 @@ func TestBgComposesWithForegroundHelper(t *testing.T) {
 		color256 = true
 		defer func() { color256 = prev }()
 
+		// bgWrap rewrites the single inner reset to "\x1b[0m\x1b[48;5;236m",
+		// so the bg re-applies before the outer reset clears it.
 		got := BgGra2(Whi9("x"))
-		want := "\x1b[48;5;236m\x1b[38;5;255mx\x1b[0m\x1b[0m"
+		want := "\x1b[48;5;236m\x1b[38;5;255mx\x1b[0m\x1b[48;5;236m\x1b[0m"
 		if got != want {
 			t.Errorf("BgGra2(Whi9(\"x\")) = %q, want %q", got, want)
 		}
@@ -271,14 +273,54 @@ func TestBgComposesWithForegroundHelper(t *testing.T) {
 		defer func() { color256 = prev }()
 
 		got := Bold(BgGra2(Whi9("x")))
-		// Bold's resetCodeRe rewrites every inner reset to "\x1b[0m\x1b[1m", so
-		// the bold attribute reapplies after both the inner fg reset and the
-		// inner bg reset, keeping bold alive across the full nest.
-		want := "\x1b[1m\x1b[48;5;236m\x1b[38;5;255mx\x1b[0m\x1b[1m\x1b[0m\x1b[1m\x1b[0m"
+		// bgWrap inserts an inner bg re-apply; Bold's outer rewrite then sees
+		// two inner resets and re-applies bold after each, keeping bold alive
+		// across the full nest.
+		want := "\x1b[1m\x1b[48;5;236m\x1b[38;5;255mx\x1b[0m\x1b[1m\x1b[48;5;236m\x1b[0m\x1b[1m\x1b[0m"
 		if got != want {
 			t.Errorf("Bold(BgGra2(Whi9(\"x\"))) = %q, want %q", got, want)
 		}
 	})
+}
+
+// TestBgSurvivesAcrossInnerResets verifies the bgWrap rewrite makes a Bg
+// helper preserve its background across an arbitrarily long compound input
+// that itself contains multiple inner fg helpers (each ending in \x1b[0m).
+// Before the bgWrap fix, only the first segment got the bg; everything after
+// the first inner reset rendered against the terminal's default background.
+func TestBgSurvivesAcrossInnerResets(t *testing.T) {
+	defer SetEnabled(true)()
+	prev := color256
+	color256 = true
+	defer func() { color256 = prev }()
+
+	got := BgGra2(Whi9("A") + " " + Yel7("B") + " " + Whi9("C"))
+
+	// 1 leading bg-set + 3 re-applies after each inner reset = 4 occurrences.
+	if c := strings.Count(got, "\x1b[48;5;236m"); c != 4 {
+		t.Errorf("BgGra2 across 3 inner resets: got %d bg-set occurrences, want 4\noutput: %q", c, got)
+	}
+	if stripped := ClearCode(got); stripped != "A B C" {
+		t.Errorf("ClearCode round-trip: got %q, want %q", stripped, "A B C")
+	}
+}
+
+// TestFgCompositionUnchanged confirms Part C's bgWrap fix did not accidentally
+// change foreground compose behavior. Fg helpers route through plain wrap
+// (no resetCodeRe rewrite), so an outer fg helper does NOT re-apply after
+// inner resets — inner fg helpers override the outer per segment, which is
+// the documented v1.0+ semantics. Test: Red5(Whi9("A") + Yel7("B")) must
+// contain "\x1b[38;5;196m" exactly once (the outer wrap only).
+func TestFgCompositionUnchanged(t *testing.T) {
+	defer SetEnabled(true)()
+	prev := color256
+	color256 = true
+	defer func() { color256 = prev }()
+
+	got := Red5(Whi9("A") + Yel7("B"))
+	if c := strings.Count(got, "\x1b[38;5;196m"); c != 1 {
+		t.Errorf("fg compose changed: Red5 outer wrap appears %d times, want 1\noutput: %q", c, got)
+	}
 }
 
 // TestBoldNoTTY: when color is disabled, Bold returns input unchanged.
@@ -559,5 +601,92 @@ func TestColorSetEnabledTogglesAndRestores(t *testing.T) {
 	restore()
 	if enabled != before {
 		t.Errorf("after second restore: enabled = %v, want %v", enabled, before)
+	}
+}
+
+// captureShowBgRamps runs ShowBgRamps with the given args and returns stdout.
+func captureShowBgRamps(t *testing.T, token string, fgIndex int) string {
+	t.Helper()
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	ShowBgRamps(token, fgIndex)
+	w.Close()
+	os.Stdout = oldStdout
+	buf, _ := io.ReadAll(r)
+	return string(buf)
+}
+
+// TestShowBgRampsCoversAllBgFamilies verifies every Bg family label appears in
+// the output, the default token "TOKEN" renders once per (family, step) when
+// the token argument is empty, and a custom token does not leak the default.
+func TestShowBgRampsCoversAllBgFamilies(t *testing.T) {
+	output := captureShowBgRamps(t, "", -1)
+
+	wantFamilies := []string{"BgGra", "BgRed", "BgOrg", "BgYel", "BgGrn", "BgCya", "BgBlu", "BgPur", "BgMag", "BgWhi", "BgHeat"}
+	// Each Bg family name embeds an existing fg family name (e.g. "BgGra"
+	// contains "Gra"), so check the full "Bg<X>" prefix appears in the
+	// row label which is rendered as "Bg<X> " (label is left-aligned, with
+	// a trailing space before the swatches). We accept any occurrence.
+	for _, fam := range wantFamilies {
+		if !strings.Contains(output, fam) {
+			t.Errorf("ShowBgRamps output missing family label %q\noutput:\n%s", fam, output)
+		}
+	}
+
+	if got, want := strings.Count(output, "TOKEN"), 11*11; got != want {
+		t.Errorf("default token count: got %d, want %d", got, want)
+	}
+
+	custom := captureShowBgRamps(t, "HEADER", -1)
+	if got, want := strings.Count(custom, "HEADER"), 11*11; got != want {
+		t.Errorf("custom token count: got %d, want %d", got, want)
+	}
+	if strings.Contains(custom, "TOKEN") {
+		t.Errorf("default token leaked into custom-token output")
+	}
+}
+
+// TestShowBgRampsAutoContrast forces color mode and verifies the auto-contrast
+// path produces both white text (on dark bg steps) and black text (on light
+// bg steps). Confirms contrastFg is wired up correctly and the SGR composition
+// emits the combined 48;5;<bg>;38;5;<fg>m sequence.
+func TestShowBgRampsAutoContrast(t *testing.T) {
+	defer SetEnabled(true)()
+	prev := color256
+	color256 = true
+	defer func() { color256 = prev }()
+
+	output := captureShowBgRamps(t, "x", -1)
+
+	if !strings.Contains(output, ";38;5;15m") {
+		t.Errorf("auto-contrast missing white-on-dark (;38;5;15m)\noutput:\n%q", output)
+	}
+	if !strings.Contains(output, ";38;5;16m") {
+		t.Errorf("auto-contrast missing black-on-light (;38;5;16m)\noutput:\n%q", output)
+	}
+}
+
+// TestContrastFgThreshold spot-checks the readability threshold across the
+// 256-color space: cube black/white endpoints, cube primaries red/green,
+// grayscale endpoints, and a grayscale midpoint.
+func TestContrastFgThreshold(t *testing.T) {
+	cases := []struct {
+		idx  int
+		want int
+		note string
+	}{
+		{16, 15, "cube black → white text"},
+		{231, 16, "cube white → black text"},
+		{196, 15, "Red5 → white text"},
+		{245, 16, "gray midpoint (level 138) → black text"},
+		{232, 15, "darkest gray (level 8) → white text"},
+		{255, 16, "lightest gray (level 238) → black text"},
+		{46, 16, "Grn5 (bright green) → black text"},
+	}
+	for _, tc := range cases {
+		if got := contrastFg(tc.idx); got != tc.want {
+			t.Errorf("contrastFg(%d) = %d, want %d (%s)", tc.idx, got, tc.want, tc.note)
+		}
 	}
 }

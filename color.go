@@ -83,6 +83,23 @@ func wrap(code string, v any) string {
 	return "\x1b[" + code + "m" + s + "\x1b[0m"
 }
 
+// bgWrap is the bg-family counterpart to wrap. Like wrap it gates on enabled
+// and color256, but additionally rewrites every inner "\x1b[0m" in the
+// rendered input to "\x1b[0m\x1b[<code>m" so the bg color re-applies after
+// every nested reset — matching the resetCodeRe trick Bold and Reverse use.
+// Without this rewrite, BgGra2(Whi9("A") + Yel7("B")) would lose the gray
+// background at the first inner reset; with it, the bg persists across the
+// whole compound string. Fg helpers stay on wrap: their semantics are
+// intentionally per-segment (inner fg overrides outer fg).
+func bgWrap(code string, v any) string {
+	s := fmt.Sprint(v)
+	if !enabled || !color256 {
+		return s
+	}
+	rewrapped := resetCodeRe.ReplaceAllString(s, "\x1b[0m\x1b["+code+"m")
+	return "\x1b[" + code + "m" + rewrapped + "\x1b[0m"
+}
+
 // ─── modifier wrappers ───────────────────────────────────────────────────────
 
 // resetCodeRe matches the literal "\x1b[0m" inner-reset emitted by every
@@ -448,6 +465,80 @@ func ShowGrid(token string, reverse bool, fgIndex int) {
 		fmt.Println("│")
 	}
 	fmt.Println(bot)
+}
+
+// ─── ShowBgRamps ─────────────────────────────────────────────────────────────
+
+// ShowBgRamps prints one row per Bg<Hue> family (10 hues + Heat = 11 rows),
+// each showing the family label followed by 11 step swatches (steps 0..10) as
+// solid background-colored blocks with token rendered inside. Distinct from
+// ShowGrid(token, true, fgIndex), which is a dense bordered ramp×step matrix;
+// ShowBgRamps is a per-family strip optimized for picking a Bg<Hue><Step> at
+// a glance, with always-readable labels.
+//
+// When fgIndex < 0, the text color is auto-contrasted per step from the bg
+// luminance (white on dark steps, black on light steps) so the token is
+// legible at every step. When fgIndex >= 0 (0..255), that fixed 256-color
+// SGR index is used as the text color across all swatches. If token is empty,
+// "TOKEN" is used.
+func ShowBgRamps(token string, fgIndex int) {
+	if token == "" {
+		token = defaultGridToken
+	}
+	ramps := append(append([]rampDef{}, hueRamps...), rampDef{"Heat", heatRamp})
+
+	cellW := len(token)
+	nameW := 0
+	for _, r := range ramps {
+		if l := len("Bg") + len(r.name); l > nameW {
+			nameW = l
+		}
+	}
+
+	fmt.Println(Gra5("Bg<Hue><Step> swatches (steps 0..10):"))
+	for _, r := range ramps {
+		fmt.Printf("  %-*s ", nameW, "Bg"+r.name)
+		for _, idx := range r.indices {
+			fg := fgIndex
+			if fg < 0 {
+				fg = contrastFg(idx)
+			}
+			padded := fmt.Sprintf(" %-*s ", cellW, token)
+			sgrCode := fmt.Sprintf("48;5;%d;38;5;%d", idx, fg)
+			fmt.Print(wrap(sgrCode, padded))
+		}
+		fmt.Println()
+	}
+}
+
+// contrastFg returns a high-contrast 256-color SGR index to use as foreground
+// text on a background of the given index. 15 (bright white) for dark
+// backgrounds; 16 (black) for light backgrounds. Threshold is 128 on an
+// ITU-R BT.601 luminance approximation; the cube levels [0,95,135,175,215,
+// 255] are the xterm-256 RGB anchors.
+func contrastFg(idx int) int {
+	var r, g, b int
+	switch {
+	case idx >= 232 && idx <= 255:
+		level := 8 + (idx-232)*10
+		r, g, b = level, level, level
+	case idx >= 16 && idx <= 231:
+		n := idx - 16
+		levels := [6]int{0, 95, 135, 175, 215, 255}
+		r = levels[n/36]
+		g = levels[(n%36)/6]
+		b = levels[n%6]
+	default:
+		if idx < 7 {
+			return 15
+		}
+		return 16
+	}
+	lum := (299*r + 587*g + 114*b) / 1000
+	if lum < 128 {
+		return 15
+	}
+	return 16
 }
 
 // ─── FormatUsage ─────────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@
 | Version | Summary |
 |---------|---------|
 | Unreleased | |
+| 1.4.0 | AC3: adopt canon v0.124.0; add showgrid -b; fix Bg compose bug |
 | 1.3.0 | AC2: add Bg<Hue><Step> background-color helper family |
 | 1.2.1 | AC1: adopt governa v0.122.0 scaffolding (build/prep/rel + docs) |
 | 1.2.0 | feat: promote `cmd/showgrid` to a stand-alone utility. Adds `programVersion` constant (locked to the package version) and a `-v` / `--version` short-circuit that prints `showgrid v<programVersion>`. Usage banner gains a `-v, --version` line and Whi5-colorized section headers (`Usage` / `Options` / `Examples` on their own lines, no trailing colon, content indented below). README adds an install/run section pointing at `go install github.com/queone/governa-color/cmd/showgrid@latest`. Package API (`color.ShowGrid`) unchanged. |
