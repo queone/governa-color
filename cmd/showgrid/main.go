@@ -2,16 +2,21 @@
 // ramp at every step, each cell rendering a sample token. Useful for picking
 // a label color or comparing close shades.
 //
+// Install as a stand-alone utility:
+//
+//	go install github.com/queone/governa-color/cmd/showgrid@latest
+//
 // Usage:
 //
-//	go run ./cmd/showgrid [-r | -r=N] [token]
+//	showgrid [-r | -r=N] [-v] [token]
 //
 // If [token] is omitted, "TOKEN" is used. With -r, cells use background-color
 // SGR so each shade fills its rectangle as a solid block (handy for picking
 // label-background colors). With -r=N (e.g. -r=15), N is the 256-color SGR
 // index used as the text color rendered on top of those colored cells.
 //
-// Pass -h, --help, or -? to print this usage.
+// Pass -h, --help, or -? to print this usage. Pass -v or --version to print
+// the program version and exit.
 package main
 
 import (
@@ -22,6 +27,11 @@ import (
 
 	"github.com/queone/governa-color"
 )
+
+// programVersion tracks the governa-color package version. Bump in lockstep
+// whenever a release touches showgrid so `showgrid -v` matches the release tag
+// of the surrounding module.
+const programVersion = "1.2.0"
 
 // reverseFlag implements flag.Value with IsBoolFlag, so "-r" alone enables
 // reverse mode with a default-fg text color, and "-r=N" enables reverse mode
@@ -69,22 +79,25 @@ func (rv *reverseFlag) Set(s string) error {
 func (rv *reverseFlag) IsBoolFlag() bool { return true }
 
 func usage(out *os.File) {
-	fmt.Fprintln(out, "Usage: showgrid [-r | -r=N] [token]")
+	fmt.Fprintln(out, color.Whi5("Usage"))
+	fmt.Fprintln(out, "  showgrid [-r | -r=N] [-v] [token]")
 	fmt.Fprintln(out)
 	fmt.Fprintln(out, "Print a bordered side-by-side grid of every governa-color ramp")
 	fmt.Fprintln(out, "at every step, each cell rendering [token] (default: TOKEN).")
 	fmt.Fprintln(out)
-	fmt.Fprintln(out, "Options:")
+	fmt.Fprintln(out, color.Whi5("Options"))
 	fmt.Fprintln(out, "  -r            reverse video: cells use background-color SGR (48;5;N)")
 	fmt.Fprintln(out, "                instead of foreground (38;5;N) — each cell becomes a solid")
 	fmt.Fprintln(out, "                colored block. Text color falls back to terminal default.")
 	fmt.Fprintln(out, "  -r=N          reverse video plus text-color override: N is a 256-color")
 	fmt.Fprintln(out, "                SGR index (0-255) used for the text rendered on top of the")
 	fmt.Fprintln(out, "                colored cells. Example: -r=15 for bright-white text.")
+	fmt.Fprintln(out, "  -v, --version")
+	fmt.Fprintln(out, "                print the program version and exit")
 	fmt.Fprintln(out, "  -h, --help, -?")
 	fmt.Fprintln(out, "                print this usage and exit")
 	fmt.Fprintln(out)
-	fmt.Fprintln(out, "Examples:")
+	fmt.Fprintln(out, color.Whi5("Examples"))
 	fmt.Fprintln(out, "  showgrid                # default token, foreground colors")
 	fmt.Fprintln(out, "  showgrid HEADER         # custom token, foreground colors")
 	fmt.Fprintln(out, "  showgrid -r             # default token, colored backgrounds, default text")
@@ -95,6 +108,10 @@ func main() {
 	for _, a := range os.Args[1:] {
 		if a == "-h" || a == "--help" || a == "-?" {
 			usage(os.Stdout)
+			return
+		}
+		if a == "-v" || a == "--version" {
+			fmt.Printf("showgrid v%s\n", programVersion)
 			return
 		}
 	}
