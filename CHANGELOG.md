@@ -3,6 +3,7 @@
 | Version | Summary |
 |---------|---------|
 | Unreleased | |
+| 1.4.1 | AC4: preserve AGENTS.md; preserve README.md; preserve CHANGELOG.md |
 | 1.4.0 | AC3: adopt canon v0.124.0; add showgrid -b; fix Bg compose bug |
 | 1.3.0 | AC2: add Bg<Hue><Step> background-color helper family |
 | 1.2.1 | AC1: adopt governa v0.122.0 scaffolding (build/prep/rel + docs) |
