@@ -36,7 +36,7 @@ import (
 // programVersion tracks the governa-color package version. Bump in lockstep
 // whenever a release touches showgrid so `showgrid -v` matches the release tag
 // of the surrounding module.
-const programVersion = "1.2.1"
+const programVersion = "1.5.0"
 
 // reverseFlag implements flag.Value with IsBoolFlag, so "-r" alone enables
 // reverse mode with a default-fg text color, and "-r=N" enables reverse mode
