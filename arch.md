@@ -26,9 +26,9 @@ Document the system's major components, boundaries, runtime flow, storage model,
 - `build.sh`: self-contained build, release-prep, and release tooling
 - `cmd/showgrid/main.go`: stand-alone showgrid utility
 - `cmd/showpalette/main.go`: stand-alone showpalette utility
-- `governa/development-cycle.md`: workflow from roadmap through release
-- `governa/ac-template.md`: acceptance-criteria template for new work
-- `governa/build-release.md`: build, test, and release rules
+- `govna/development-cycle.md`: workflow from roadmap through release
+- `govna/ac-template.md`: acceptance-criteria template for new work
+- `govna/build-release.md`: build, test, and release rules
 - `docs/critique-protocol.md`: critique protocol (repo-specific; not a governa doc)
 
 ## Data And Control Flow

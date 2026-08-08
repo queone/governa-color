@@ -3,6 +3,7 @@
 | Version | Summary |
 |---------|---------|
 | Unreleased | preserve CHANGELOG.md; preserve README.md repo-owned |
+| 1.5.1 | AC6: migrate governance from governa to govna |
 | 1.5.0 | AC5: retire Go build tooling; sync to governa v0.139.0 |
 | 1.4.1 | AC4: preserve AGENTS.md; preserve README.md; preserve CHANGELOG.md |
 | 1.4.0 | AC3: adopt canon v0.124.0; add showgrid -b; fix Bg compose bug |

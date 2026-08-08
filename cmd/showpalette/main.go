@@ -16,7 +16,7 @@ import (
 
 // programVersion tracks the governa-color package version. Bump in lockstep
 // with the package release.
-const programVersion = "1.5.0"
+const programVersion = "1.5.1"
 
 func main() {
 	fmt.Printf("governa-color v%s\n\n", programVersion)

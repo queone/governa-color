@@ -3,11 +3,6 @@
 *.test
 *.exe
 
-# Root command binaries (Go compiler emits these to repo root when `go build ./cmd/<name>` is run without -o).
-/build
-/prep
-/rel
-
 # Coverage
 build-cover-*.out
 
@@ -23,7 +18,7 @@ Thumbs.db
 .vscode/
 
 # ---- Go ----
-# Go-specific additions appended by governa apply when stack:Go is detected.
+# Go-specific additions appended by govna render-canon when stack:Go is detected.
 # Based on the standard Go .gitignore; overlaps with the base are omitted.
 
 # Binaries for plugins and cross-platform builds
