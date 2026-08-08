@@ -300,10 +300,14 @@ build_run() {
   if [ "${#targets[@]}" -eq 0 ]; then
     local d
     for d in cmd/*/; do
-      [ -d "$d" ] || continue
+      [ -f "${d}main.go" ] || continue
       install_targets+=("$(basename "$d")")
     done
-    printf '\n%s\n' "$(yel7 '==> Building all utilities')"
+    if [ "${#install_targets[@]}" -eq 0 ]; then
+      printf '\n%s\n' "$(yel7 '==> No utilities to build or install.')"
+    else
+      printf '\n%s\n' "$(yel7 '==> Building all utilities')"
+    fi
   else
     install_targets=("${targets[@]}")
     printf '\n%s %s\n' "$(yel7 '==> Building specific utilities:')" "$(grn3 "${targets[*]}")"
@@ -327,7 +331,7 @@ EOF
     local cmd_dir_count=0
     local cmd_dir
     for cmd_dir in cmd/*/; do
-      [ -d "$cmd_dir" ] && cmd_dir_count=$((cmd_dir_count + 1))
+      [ -f "${cmd_dir}main.go" ] && cmd_dir_count=$((cmd_dir_count + 1))
     done
     [ "$cmd_dir_count" -gt 1 ] && multi_utility=1
     for target in "${install_targets[@]}"; do

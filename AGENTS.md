@@ -308,7 +308,6 @@ Note: `CLAUDE.md` is an example of an exempt identifier — it names the Claude 
 
 ## Project Rules
 
-- **Multi-utility repo.** This repo builds two installable binaries from `cmd/showgrid/` and `cmd/showpalette/`. `./build.sh` validates and installs both.
-- **Per-utility programVersion.** No `cmd/governa-color/` exists, so `./build.sh prep` detects no primary binary and skips all `programVersion` bumps. Bump both `cmd/showgrid/main.go` and `cmd/showpalette/main.go` manually (in lockstep with the package release version) before running prep.
+- Treat this repository as a Go library with no installable cmd binaries.
 - **Semver decision test.** Does the change affect library consumers (exported API, behavior, signatures) or utility users (flags, output)? Yes → MINOR (reset PATCH to 0). No → PATCH. Batch PATCH fixes.
 - Follow existing repo patterns unless an approved improvement says otherwise.

@@ -3,6 +3,7 @@
 | Version | Summary |
 |---------|---------|
 | Unreleased | |
+| 1.6.0 | AC8: retire Go display utilities; point to rkit swatch |
 | 1.5.2 | AC7: register repo-owned governance files |
 | 1.5.1 | AC6: migrate governance from governa to govna |
 | 1.5.0 | AC5: retire Go build tooling; sync to governa v0.139.0 |

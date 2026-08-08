@@ -30,17 +30,16 @@ func main() {
 
 Each hue exposes an 11-step ramp (`Gra0..Gra10`, `Red0..Red10`, …, `Whi0..Whi10`) with step 5 as the canonical shade; `Heat0..Heat10` is a severity/quality ramp (red → yellow → green). Every foreground helper has a `Bg<Hue><Step>` twin emitting the same color as background (`48;5;N` SGR), composable with `Bold`, `Reverse`, and any foreground helper.
 
-`color.ShowPalette()` prints a labeled swatch of every color function for terminal verification. `color.ShowGrid(token, reverse, fgIndex)` prints a bordered side-by-side grid of every ramp at every step (RedX..HeatX columns × 0..10\* rows), each cell rendering `token` — useful for picking a label color or comparing close shades. Empty `token` defaults to `"TOKEN"`. With `reverse=true` each cell is a solid background-color block (handy for label-background colors); `fgIndex >= 0` then overrides the text color to that 256-color SGR index (e.g. 15 for bright white).
+## Palette inspection
 
-## showgrid utility
+Use the Rust [`swatch`](https://github.com/queone/rkit#swatch) utility from rkit for terminal palette inspection:
 
-`cmd/showgrid` is a stand-alone CLI exposing `color.ShowGrid` directly. Install:
-
-```bash
-go install github.com/queone/governa-color/cmd/showgrid@latest
-```
-
-Then run `showgrid [token]` for the default grid, `showgrid -r` for reverse-video cells (solid colored blocks), `showgrid -r=N` to override the text color to 256-color SGR index N, `showgrid -v` for the program version, or `showgrid -h` for full usage.
+- Run `swatch palette` for the complete xterm palette and named ramps.
+- Run `swatch grid [TOKEN]` for the bordered foreground-color grid.
+- Run `swatch grid --reverse [TOKEN]` for the reverse-video grid.
+- Add `--foreground INDEX` to a reverse grid to pin its text color.
+- Run `swatch backgrounds [TOKEN]` for auto-contrasted background ramps.
+- Add `--foreground INDEX` to background ramps to pin their text color.
 
 ## Versioning
 

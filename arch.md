@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Describe the system's purpose.
+Provide reusable ANSI 256-color helpers for Go command-line applications.
 
 ## System Summary
 
-Document the system's major components, boundaries, runtime flow, storage model, and external integrations here.
+The repository is a Go library with no installable command binaries. It exposes foreground and background ramps, composable modifiers, ANSI clearing, terminal capability detection, and usage formatting.
 
 ## Current Platform
 
@@ -14,18 +14,16 @@ Document the system's major components, boundaries, runtime flow, storage model,
 
 ## Major Components
 
-- entrypoints and user-facing surfaces
-- core domain or business logic
-- storage, messaging, or state boundaries
-- external integrations and trust boundaries
+- foreground, background, and heat-ramp helpers
+- terminal capability and color-enablement detection
+- composable bold and reverse modifiers
+- ANSI clearing and usage formatting
 
 ## Core Files
 
 - `AGENTS.md`: base governance contract
 - `plan.md`: prioritized roadmap and approved direction
 - `build.sh`: self-contained build, release-prep, and release tooling
-- `cmd/showgrid/main.go`: stand-alone showgrid utility
-- `cmd/showpalette/main.go`: stand-alone showpalette utility
 - `govna/development-cycle.md`: workflow from roadmap through release
 - `govna/ac-template.md`: acceptance-criteria template for new work
 - `govna/build-release.md`: build, test, and release rules
@@ -33,7 +31,7 @@ Document the system's major components, boundaries, runtime flow, storage model,
 
 ## Data And Control Flow
 
-Describe the main request, job, or publish path from entrypoint to output.
+Consumers call an exported helper. The package checks terminal and environment capabilities, emits the applicable SGR wrapper, and otherwise returns uncolored text.
 
 ## Architecture Notes
 

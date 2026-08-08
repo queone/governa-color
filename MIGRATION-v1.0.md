@@ -27,7 +27,7 @@ v1.0 replaces the ad-hoc named-color API (Gra, Grn, Yel, GrnD, GrnR, BoldW, …)
 - `ClearCode(s)` — strip ANSI/SGR sequences.
 - `SetEnabled(b)` — test helper.
 - `UsageLine` + `FormatUsage` — the help/flag formatter.
-- `ShowPalette()` — now dumps the v1.0 palette (16-color + cube + grayscale + hue ramps + heat ramp). The `cmd/showpalette` runner (`go run github.com/queone/governa-color/cmd/showpalette`) is the easiest way to inspect from a terminal.
+- `ShowPalette()` — historical v1.0 API that dumped the 16-color palette, cube, grayscale, hue ramps, and heat ramp. Current releases use rkit's `swatch palette` command for terminal inspection.
 
 ### Old → new mapping
 
@@ -66,7 +66,7 @@ Any time the call site is communicating *severity*, *intensity*, or a position o
 ### Migration procedure (every consumer)
 
 1. **Find call sites:** `rg "queone/governa-color" <repo>` to list every file that imports it. For each, `rg "color\.\w+" <file>` to enumerate uses.
-2. **Apply the mapping** above. For ambiguous cases (e.g., where the original code used the now-dropped `GrnD`), eyeball the v1.0 rendering and pick the step number that reads closest. The hue-ramp section of `go run github.com/queone/governa-color/cmd/showpalette` is the visual reference.
+2. **Apply the mapping** above. For ambiguous cases (e.g., where the original code used the now-dropped `GrnD`), eyeball the v1.0 rendering and pick the step number that reads closest. The hue-ramp section of rkit's `swatch palette` command is the visual reference.
 3. **Compose modifiers:** any place that needed bold or reverse in v0.x uses `Bold(...)` or `Reverse(...)` wrapping in v1.0.
 4. **Bump the dep:** `go get github.com/queone/governa-color@v1.0.0` then `go mod tidy`.
 5. **Run the consumer's full test/build pipeline** (e.g., `./build.sh` for skout). Visually spot-check any colored output the consumer emits to terminal.
@@ -120,7 +120,7 @@ v1.0 of governa-color replaces the ad-hoc named-color API with a systematic two-
 
 - The v1.0 module emits 256-color SGR only — there is no 16-color fallback. If `<repo-name>` is ever run on a non-256-color terminal, output is uncolored. (Modern terminals all support 256-color; `NO_COLOR=1` and `TERM=dumb` continue to suppress as before.)
 - `Bold` and `Reverse` are wrappers that compose with any hue/heat helper. `Bold(Grn5("x"))` is the v1.0 way to render bold green.
-- The exact v0.x → v1.0 step numbers in the mapping table are starter picks. For any call site where the visual result looks off, the fix is to bump the step number up or down. The `cmd/showpalette` runner is the easiest way to compare side-by-side.
+- The exact v0.x → v1.0 step numbers in the mapping table are starter picks. For any call site where the visual result looks off, the fix is to bump the step number up or down. Rkit's `swatch palette` command is the easiest way to compare side-by-side.
 
 ## Acceptance Tests
 
