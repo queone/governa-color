@@ -94,3 +94,6 @@ CHANGELOG row shape (enforced by prep's insertion code and by convention):
 - Do not backfill historical tags or invent alternative shapes (Keep-a-Changelog, sectioned `## vX.Y.Z`, etc.).
 
 ## Project Practices
+
+- Apply utility-version validation to declarations and strict stable SemVer only.
+- Preserve existing utility output behavior without canon utility-output probes.

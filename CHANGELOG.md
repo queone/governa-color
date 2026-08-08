@@ -2,7 +2,8 @@
 
 | Version | Summary |
 |---------|---------|
-| Unreleased | preserve CHANGELOG.md; preserve README.md repo-owned |
+| Unreleased | |
+| 1.5.2 | AC7: register repo-owned governance files |
 | 1.5.1 | AC6: migrate governance from governa to govna |
 | 1.5.0 | AC5: retire Go build tooling; sync to governa v0.139.0 |
 | 1.4.1 | AC4: preserve AGENTS.md; preserve README.md; preserve CHANGELOG.md |
